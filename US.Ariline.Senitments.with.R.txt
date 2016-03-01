@@ -1,0 +1,281 @@
+﻿
+> setwd('F:/economics')
+>  tweets <- read.csv ("tweets.csv", stringsAsFactors=FALSE)
+> library(tm)
+Loading required package: NLP
+>  library(stringr)
+>  library(wordcloud)
+Loading required package: RColorBrewer
+> data<- gsub("^@\\w+ *", "", tweets$text)
+>  myCorpus <- Corpus(VectorSource(data))
+>  myCorpus <- tm_map(myCorpus, removePunctuation)
+>  myCorpus <- tm_map(myCorpus, content_transformer(tolower))
+>  myCorpus <- tm_map(myCorpus, removeWords, stopwords("english"))
+>  myCorpus <- tm_map(myCorpus, removeWords, c("much", "shall", "then", "new", "cant",  "can", "now", "just", "will", "dont", "ive", "got", "get"))
+>  myCorpus <- tm_map(myCorpus, stripWhitespace)
+>  myCorpus <- tm_map(myCorpus, stemDocument)
+>  pal <- brewer.pal(10,"YlGnBu")
+Warning message:
+In brewer.pal(10, "YlGnBu") :
+  n too large, allowed maximum for palette YlGnBu is 9
+Returning the palette you asked for with that many colors
+
+>  pal <- pal[-(1:5)]
+>  set.seed(145)
+>  wordcloud(words = myCorpus, scale=c(5,0.1), max.words=150, random.order=FALSE,
++           rot.per=0.40, use.r.layout=FALSE, colors=pal)
+> library(syuzhet)
+>  library(lubridate)
+>  library(ggplot2)
+Need help getting started? Try the cookbook for R:
+http://www.cookbook-r.com/Graphs/
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:NLP’:
+
+    annotate
+
+>  library(scales)
+>  library(reshape2)
+>  library(dplyr )
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:lubridate’:
+
+    intersect, setdiff, union
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> Senti <- get_nrc_sentiment(tweets$text)
+>  tweets <- cbind(tweets, Senti)
+>  sentimentSum <- data.frame(colSums(tweets[,c(16:25)]))
+>  names(sentimentSum) <- "count"
+>  sentimentSum <- cbind("sentiment" = rownames(sentimentSum), sentimentSum)
+>  rownames(sentimentSum) <- NULL
+>  ggplot(data = sentimentSum, aes(x = sentiment, y = count)) + geom_bar(aes(fill = sentiment), stat = "identity") + theme(legend.position = "none") +
++    xlab("Sentiment") + ylab("Total Count") + ggtitle("Sentiment Score for Airline")
+> library("tm")
+> library("SnowballC")
+> library("wordcloud")
+> library("RColorBrewer")
+> myCorpus <- Corpus(VectorSource(tweets))
+> 
+> toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+> 
+> myCorpus <- tm_map(myCorpus, toSpace, "/")
+> 
+> myCorpus <- tm_map(myCorpus, toSpace, "@")
+> 
+> myCorpus <- tm_map(myCorpus, toSpace, "\\|")
+> 
+> myCorpus <- tm_map(myCorpus, content_transformer(tolower))
+> 
+> myCorpus <- tm_map(myCorpus, removeNumbers)
+> 
+> myCorpus <- tm_map(myCorpus, removeWords, stopwords("english"))
+> 
+> myCorpus <- tm_map(myCorpus, removeWords, c("blabla1", "blabla2"))
+> 
+> 
+> myCorpus <- tm_map(myCorpus, removePunctuation)
+> 
+> myCorpus <- tm_map(myCorpus, stripWhitespace)
+> 
+> myCorpus <- tm_map(myCorpus, stemDocument)
+> 
+> dtm <- TermDocumentMatrix(myCorpus)
+> 
+> mm <- as.matrix(dtm)
+> a <- sort(rowSums(mm),decreasing=TRUE)
+> d <- data.frame(word = names(a),freq=a)
+> head(d, 30)
+                     word freq
+negat               negat 9213
+flight             flight 8971
+time                 time 8732
+unit                 unit 8006
+canada             canada 7848
+servic             servic 3919
+custom             custom 3866
+eastern           eastern 3754
+issu                 issu 3221
+neutral           neutral 3102
+usairway         usairway 3052
+airway             airway 3002
+americanair   americanair 2961
+american         american 2838
+southwest       southwest 2515
+southwestair southwestair 2459
+jetblu             jetblu 2399
+posit               posit 2390
+delta               delta 2332
+late                 late 2099
+central           central 1979
+cancel             cancel 1917
+thank               thank 1690
+get                   get 1620
+tell                 tell 1417
+pacif               pacif 1216
+tco                   tco 1211
+http                 http 1158
+hour                 hour 1156
+can                   can 1122
+> 
+> 
+> set.seed(1100)
+> wordcloud(words = d$word, freq = d$freq, min.freq = 500,
++           max.words=1000, random.order=FALSE, rot.per=0.35,
++           colors=brewer.pal(8, "Accent"))
+> 
+> 
+> findFreqTerms(dtm, lowfreq = 400)
+ [1] "agent"         "airlin"        "airport"       "airway"       
+ [5] "america"       "american"      "americanair"   "amp"          
+ [9] "atlant"        "attend"        "back"          "bad"          
+[13] "bag"           "book"          "call"          "can"          
+[17] "canada"        "cancel"        "central"       "chang"        
+[21] "check"         "complaint"     "custom"        "day"          
+[25] "delay"         "delta"         "eastern"       "fli"          
+[29] "flight"        "flightl"       "gate"          "get"          
+[33] "got"           "guy"           "help"          "hold"         
+[37] "hour"          "http"          "issu"          "jetblu"       
+[41] "just"          "late"          "like"          "lost"         
+[45] "luggag"        "make"          "miss"          "need"         
+[49] "negat"         "neutral"       "new"           "now"          
+[53] "one"           "pacif"         "phone"         "plane"        
+[57] "pleas"         "posit"         "problem"       "quito"        
+[61] "san"           "seat"          "servic"        "southwest"    
+[65] "southwestair"  "still"         "tco"           "tell"         
+[69] "thank"         "time"          "today"         "tri"          
+[73] "unit"          "usairway"      "virgin"        "virginamerica"
+[77] "wait"          "way"           "will"          "work"         
+[81] "york"         
+> 
+> 
+> findAssocs(dtm, terms = "cancel", corlimit = 0.8)
+$cancel
+ flight    book problem     bad   damag    lost  servic  attend  custom  luggag 
+   1.00    0.99    0.93    0.83    0.83    0.83    0.83    0.82    0.82    0.82 
+
+> 
+> findAssocs(dtm, terms = "servic", corlimit = 0.8)
+$servic
+   attend       bad    custom     damag      late      lost    luggag      tell 
+     1.00      1.00      1.00      1.00      1.00      1.00      1.00      0.99 
+complaint   problem      issu   longlin      book    flight    cancel 
+     0.98      0.98      0.97      0.95      0.90      0.85      0.83 
+
+> 
+> barplot(d[1:30,]$freq, las = 2, names.arg = d[1:30,]$word,
++         col ="green", main ="Most frequent words",
++         ylab = "Word frequencies")
+> 
+> 
+> library(graph)
+
+Attaching package: ‘graph’
+
+The following object is masked from ‘package:stringr’:
+
+    boundary
+
+> library(Rgraphviz)
+Loading required package: grid
+> library(ggplot2)
+> plot(dtm,terms=findFreqTerms(dtm,lowfreq=500)[1:15],corThreshold=0.2)
+> word.freq <- rowSums(as.matrix(dtm))
+> 
+> word.freq <- subset(word.freq, word.freq >= 400)
+> >
+Error: unexpected '>' in ">"
+> con <- data.frame(term = names(word.freq), freq = word.freq)
+> 
+> 
+> ggplot(con, aes(x=term, y=freq)) + geom_bar(stat="identity") +
++ + xlab("Terms") + ylab("Count") + coord_flip() +
++ + theme(axis.text=element_text(size=7))
+Error in +xlab("Terms") : invalid argument to unary operator
+> 
+> 
+> ggplot(con, aes(x=term, y=freq)) + geom_bar(stat="identity") +
++  xlab("Terms") + ylab("Count") + coord_flip() +
++  theme(axis.text=element_text(size=7))
+> word.freq <- rowSums(as.matrix(dtm))
+> 
+> word.freq <- subset(word.freq, word.freq >= 800)
+> >
+Error: unexpected '>' in ">"
+> con <- data.frame(term = names(word.freq), freq = word.freq)
+> 
+> ggplot(con, aes(x=term, y=freq)) + geom_bar(stat="identity") +
++  xlab("Terms") + ylab("Count") + coord_flip() +
++  theme(axis.text=element_text(size=7))
+> 
+> 
+>  adsSummary <- summary( tweets )
+>  adsSummary
+    tweet_id         airline_sentiment  airline_sentiment_confidence
+ Min.   :5.676e+17   Length:14640       Min.   :0.3350              
+ 1st Qu.:5.686e+17   Class :character   1st Qu.:0.6923              
+ Median :5.695e+17   Mode  :character   Median :1.0000              
+ Mean   :5.692e+17                      Mean   :0.9002              
+ 3rd Qu.:5.699e+17                      3rd Qu.:1.0000              
+ Max.   :5.703e+17                      Max.   :1.0000              
+                                                                    
+ negativereason     negativereason_confidence   airline         
+ Length:14640       Min.   :0.000             Length:14640      
+ Class :character   1st Qu.:0.361             Class :character  
+ Mode  :character   Median :0.671             Mode  :character  
+                    Mean   :0.638                               
+                    3rd Qu.:1.000                               
+                    Max.   :1.000                               
+                    NA's   :4118                                
+ airline_sentiment_gold     name           negativereason_gold
+ Length:14640           Length:14640       Length:14640       
+ Class :character       Class :character   Class :character   
+ Mode  :character       Mode  :character   Mode  :character   
+                                                              
+                                                              
+                                                              
+                                                              
+ retweet_count          text           tweet_coord        tweet_created     
+ Min.   : 0.00000   Length:14640       Length:14640       Length:14640      
+ 1st Qu.: 0.00000   Class :character   Class :character   Class :character  
+ Median : 0.00000   Mode  :character   Mode  :character   Mode  :character  
+ Mean   : 0.08265                                                           
+ 3rd Qu.: 0.00000                                                           
+ Max.   :44.00000                                                           
+                                                                            
+ tweet_location     user_timezone          anger         anticipation   
+ Length:14640       Length:14640       Min.   :0.0000   Min.   :0.0000  
+ Class :character   Class :character   1st Qu.:0.0000   1st Qu.:0.0000  
+ Mode  :character   Mode  :character   Median :0.0000   Median :0.0000  
+                                       Mean   :0.1875   Mean   :0.3672  
+                                       3rd Qu.:0.0000   3rd Qu.:1.0000  
+                                       Max.   :4.0000   Max.   :4.0000  
+                                                                        
+    disgust            fear             joy            sadness      
+ Min.   :0.0000   Min.   :0.0000   Min.   :0.0000   Min.   :0.0000  
+ 1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000  
+ Median :0.0000   Median :0.0000   Median :0.0000   Median :0.0000  
+ Mean   :0.1464   Mean   :0.2264   Mean   :0.2286   Mean   :0.2859  
+ 3rd Qu.:0.0000   3rd Qu.:0.0000   3rd Qu.:0.0000   3rd Qu.:0.0000  
+ Max.   :4.0000   Max.   :4.0000   Max.   :4.0000   Max.   :4.0000  
+                                                                    
+    surprise          trust           negative         positive     
+ Min.   :0.0000   Min.   :0.0000   Min.   :0.0000   Min.   :0.0000  
+ 1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000   1st Qu.:0.0000  
+ Median :0.0000   Median :0.0000   Median :0.0000   Median :1.0000  
+ Mean   :0.1536   Mean   :0.6573   Mean   :0.4958   Mean   :0.8677  
+ 3rd Qu.:0.0000   3rd Qu.:1.0000   3rd Qu.:1.0000   3rd Qu.:1.0000  
+ Max.   :4.0000   Max.   :5.0000   Max.   :6.0000   Max.   :6.0000  
+                                                                    
+
